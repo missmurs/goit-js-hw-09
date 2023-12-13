@@ -60,6 +60,7 @@ elements.start.addEventListener('click', function () {
   const currentDate = new Date();
   const timeDifference = selectedDate - currentDate;
 
+  elements.start.disabled = true;
   if (timeDifference <= 0) {
     return;
   }
@@ -78,9 +79,4 @@ elements.start.addEventListener('click', function () {
       updateTimerDisplay(convertMs(timeRemaining));
     }
   }, 1000);
-});
-
-elements.stop.addEventListener('click', function () {
-  clearInterval(countdownInterval);
-  elements.start.disabled = false;
 });
