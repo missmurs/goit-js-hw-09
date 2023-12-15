@@ -1,20 +1,62 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
-const elements = {
-  start: document.querySelector('[data-start]'),
-  datetimePicker: document.getElementById('datetime-picker'),
+const options = {
+  enableTime: true,
+  time_24hr: true,
+  defaultDate: new Date(),
+  minuteIncrement: 1,
+  onClose(selectedDates) {
+    handleDateSelection(selectedDates[0]);
+  },
+};
+
+const dateTimePicker = flatpickr('#datetime-picker', options);
+const startButton = document.querySelector('[data-start]');
+const timerElements = {
   days: document.querySelector('[data-days]'),
   hours: document.querySelector('[data-hours]'),
   minutes: document.querySelector('[data-minutes]'),
   seconds: document.querySelector('[data-seconds]'),
 };
 
-function addLeadingZero(value) {
-  return String(value).padStart(2, '0');
+startButton.disabled = true;
+
+let countdownInterval;
+
+function handleDateSelection(selectedDate) {
+  const currentDate = new Date();
+  if (selectedDate <= currentDate) {
+    window.alert('Please choose a date in the future');
+    startButton.disabled = true;
+  } else {
+    startButton.disabled = false;
+  }
 }
 
-elements.start.disabled = true;
+function startCountdown(selectedDate) {
+  const targetDate = new Date(selectedDate).getTime();
+
+  countdownInterval = setInterval(() => {
+    const currentDate = new Date().getTime();
+    const timeRemaining = targetDate - currentDate;
+
+    if (timeRemaining <= 0) {
+      clearInterval(countdownInterval);
+      updateTimerDisplay(0);
+    } else {
+      updateTimerDisplay(timeRemaining);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(timeRemaining) {
+  const timeObject = convertMs(timeRemaining);
+  timerElements.days.textContent = addLeadingZero(timeObject.days);
+  timerElements.hours.textContent = addLeadingZero(timeObject.hours);
+  timerElements.minutes.textContent = addLeadingZero(timeObject.minutes);
+  timerElements.seconds.textContent = addLeadingZero(timeObject.seconds);
+}
 
 function convertMs(ms) {
   const second = 1000;
@@ -22,65 +64,20 @@ function convertMs(ms) {
   const hour = minute * 60;
   const day = hour * 24;
 
-  const days = addLeadingZero(Math.floor(ms / day));
-  const hours = addLeadingZero(Math.floor((ms % day) / hour));
-  const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
-  const seconds = addLeadingZero(
-    Math.floor((((ms % day) % hour) % minute) / second)
-  );
+  const days = Math.floor(ms / day);
+  const hours = Math.floor((ms % day) / hour);
+  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
 }
 
-function updateTimerDisplay(time) {
-  elements.days.textContent = addLeadingZero(time.days);
-  elements.hours.textContent = addLeadingZero(time.hours);
-  elements.minutes.textContent = addLeadingZero(time.minutes);
-  elements.seconds.textContent = addLeadingZero(time.seconds);
+function addLeadingZero(value) {
+  return value.toString().padStart(2, '0');
 }
 
-flatpickr(elements.datetimePicker, {
-  enableTime: true,
-  time_24hr: true,
-  defaultDate: new Date(),
-  minuteIncrement: 1,
-  onClose(selectedDates) {
-    const selectedDate = selectedDates[0];
-
-    if (selectedDate <= new Date()) {
-      alert('Please choose a date in the future');
-      elements.start.disabled = true;
-    } else {
-      elements.start.disabled = false;
-    }
-  },
-});
-
-let countdownInterval;
-
-elements.start.addEventListener('click', function () {
-  const selectedDate = flatpickr.parseDate(elements.datetimePicker.value);
-  const currentDate = new Date();
-  const timeDifference = selectedDate - currentDate;
-
-  elements.start.disabled = true;
-
-  if (timeDifference <= 0) {
-    return;
-  }
-
-  updateTimerDisplay(convertMs(timeDifference));
-
-  countdownInterval = setInterval(function () {
-    const currentTime = new Date();
-    const timeRemaining = selectedDate - currentTime;
-
-    if (timeRemaining <= 0) {
-      clearInterval(countdownInterval);
-      updateTimerDisplay({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      elements.start.disabled = true;
-    } else {
-      updateTimerDisplay(convertMs(timeRemaining));
-    }
-  }, 1000);
+startButton.addEventListener('click', () => {
+  const selectedDate = dateTimePicker.selectedDates[0];
+  startCountdown(selectedDate);
+  startButton.disabled = true; // Disable the button once the countdown starts
 });
