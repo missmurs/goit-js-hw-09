@@ -26,7 +26,7 @@ function convertMs(ms) {
   const minutes = Math.floor(((ms % day) % hour) / minute);
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
-  return { days, hours, minutes, seconds };
+  return (timer = { days, hours, minutes, seconds });
 }
 
 function updateTimerDisplay(time) {
