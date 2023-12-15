@@ -11,15 +11,16 @@ const elements = {
 };
 
 function addLeadingZero(value) {
-  return value < 10 ? `0${value}` : value;
+  return value.toString().padStart(2, '0');
 }
+
+elements.start.disabled = true;
 
 function convertMs(ms) {
   const second = 1000;
   const minute = second * 60;
   const hour = minute * 60;
   const day = hour * 24;
-
   const days = Math.floor(ms / day);
   const hours = Math.floor((ms % day) / hour);
   const minutes = Math.floor(((ms % day) % hour) / minute);
@@ -35,22 +36,21 @@ function updateTimerDisplay(time) {
   elements.seconds.textContent = addLeadingZero(time.seconds);
 }
 
-function handleDateSelection(selectedDates) {
-  const selectedDate = selectedDates[0];
-
-  if (selectedDate <= new Date()) {
-    elements.start.disabled = true;
-  } else {
-    elements.start.disabled = false;
-  }
-}
-
 flatpickr(elements.datetimePicker, {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onClose: handleDateSelection,
+  onClose(selectedDates) {
+    const selectedDate = selectedDates[0];
+
+    if (selectedDate <= new Date()) {
+      alert('Please choose a date in the future');
+      elements.start.disabled = true;
+    } else {
+      elements.start.disabled = false;
+    }
+  },
 });
 
 let countdownInterval;
@@ -61,6 +61,7 @@ elements.start.addEventListener('click', function () {
   const timeDifference = selectedDate - currentDate;
 
   elements.start.disabled = true;
+
   if (timeDifference <= 0) {
     return;
   }
