@@ -79,5 +79,5 @@ function addLeadingZero(value) {
 startButton.addEventListener('click', () => {
   const selectedDate = dateTimePicker.selectedDates[0];
   startCountdown(selectedDate);
-  startButton.disabled = true; // Disable the button once the countdown starts
+  startButton.disabled = true;
 });
